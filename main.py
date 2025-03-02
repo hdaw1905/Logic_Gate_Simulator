@@ -176,6 +176,12 @@ class Wire:
         self.end_slot = end_slot
         self.color = color
 
+    def transfer_signal(self):
+        """Update the state of the connected component (e.g., LED)."""
+        if isinstance(self.end_gate, LED):
+            self.end_gate.state = self.start_gate.state
+
+
     def draw(self, screen):
         start_pos = self.get_start_position()
         end_pos = self.get_end_position()
@@ -334,11 +340,9 @@ while running:
 
     # Update LED state based on the connected gate's output
     for led in leds:
-        led.state = False  # Default to OFF
         for wire in wires:
-            if wire.end_gate == led:  # Check if the LED is connected to a gate
-                if isinstance(wire.start_gate, LogicGate):
-                    led.state = wire.start_gate.state  # Set LED state to the connected gate's output
+            if wire.end_gate == led and wire.end_slot == led.inputs[0]:
+                led.state = wire.start_gate.state
 
     # Draw components
     for gate in gates:
@@ -351,6 +355,7 @@ while running:
     # Draw wires after drawing components to keep them behind the components
     for wire in wires:
         wire.draw(screen)
+        wire.transfer_signal()
 
     # Draw the current wire being created
     if current_wire:
